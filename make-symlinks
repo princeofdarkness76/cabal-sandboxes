@@ -1,0 +1,30 @@
+#! /bin/bash -e
+
+if ! [ $# -eq 1 ]; then
+    echo "Usage: ./make-symlinks DIR"
+    echo " eg: ./make-symlinks pandoc"
+    exit 1
+fi
+
+base="$PWD/$1/.cabal-sandbox/bin/"
+
+if ! [ -d "$base" ]; then
+    echo "error: base path $base"
+    echo "error: does not exist or is not a directory."
+    exit 1
+fi
+
+echo "creating symbolic links:"
+
+for srcname in `ls "$base"`
+do
+    src="$base/$srcname"
+    dstname=`basename "$src"`
+    dst="$HOME/.bin/$dstname"
+
+    echo ""
+    echo "from: $src"
+    echo "to:   $dst"
+
+    ln -s "$src" "$dst"
+done
