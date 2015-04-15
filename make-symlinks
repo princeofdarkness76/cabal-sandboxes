@@ -1,12 +1,30 @@
 #! /bin/bash -e
 
-if ! [ $# -eq 1 ]; then
-    echo "Usage: ./make-symlinks DIR"
+function usage() {
+    echo "Usage: ./make-symlinks DIR [PROGS]"
     echo " eg: ./make-symlinks pandoc"
+    echo " or: ./make-symlinks yesod-bin yesod"
+}
+
+function copy-symlink() {
+    src="$1"
+    dstname=$(basename "$src")
+    dst="$HOME/.bin/$dstname"
+
+    echo ""
+    echo "from: $src"
+    echo "to:   $dst"
+
+    ln -s "$src" "$dst"
+}
+
+if [ $# -eq 0 ]; then
+    usage
     exit 1
 fi
 
 base="$PWD/$1/.cabal-sandbox/bin/"
+shift
 
 if ! [ -d "$base" ]; then
     echo "error: base path $base"
@@ -16,15 +34,13 @@ fi
 
 echo "creating symbolic links:"
 
-for srcname in `ls "$base"`
-do
-    src="$base/$srcname"
-    dstname=`basename "$src"`
-    dst="$HOME/.bin/$dstname"
-
-    echo ""
-    echo "from: $src"
-    echo "to:   $dst"
-
-    ln -s "$src" "$dst"
-done
+if [ $# -gt 0 ]; then
+    while [ $# -gt 0 ]; do
+        copy-symlink "$base/$1"
+        shift
+    done
+else
+    for srcname in "$base"/*; do
+        copy-symlink "$srcname"
+    done
+fi
